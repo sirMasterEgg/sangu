@@ -30,12 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  firebase_auth: ^4.6.1
+  firebase_core: ^2.13.0
+  provider: ^6.0.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  firebase_core: ^2.13.1
+
 
 dev_dependencies:
   flutter_test:
@@ -75,10 +77,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+    - family: SofiaPro
+      fonts:
+        - asset: fonts/sofiapro-light.otf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
