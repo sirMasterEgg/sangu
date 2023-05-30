@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "977645765493",
+    "project_id": "proyek-sangu",
+    "storage_bucket": "proyek-sangu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977645765493:android:237790e19ca9f7c39c893c",
+        "android_client_info": {
+          "package_name": "com.mbokmu.sangu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjYW8o8GmT_mnufMYqBbdagjuCYCh5Yhs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

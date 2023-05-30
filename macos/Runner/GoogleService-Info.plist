@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCN5YHJJ6UttvWQC5qvqTYmBJRRX6vjztw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>977645765493</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mbokmu.sangu</string>
+	<key>PROJECT_ID</key>
+	<string>proyek-sangu</string>
+	<key>STORAGE_BUCKET</key>
+	<string>proyek-sangu.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:977645765493:ios:bce383fd4e298deb9c893c</string>
+</dict>
+</plist>
