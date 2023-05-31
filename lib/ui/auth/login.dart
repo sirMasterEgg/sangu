@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sangu/ui/auth/register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,7 +11,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _isLoading= false;
   var _emailController;
   var _passwordController;
 
@@ -26,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _isLoading? const CircularProgressIndicator():const SizedBox(),
               const Padding(
                 padding: EdgeInsets.only(top: 32.0),
                 child: Image(
@@ -77,7 +76,9 @@ class _LoginPageState extends State<LoginPage> {
                         )
                       ),
                     ),
-                    onPressed: (){},
+                    onPressed: (){
+                      logIn();
+                    },
                     child: Text(
                       'Login'.toUpperCase(),
                       style: const TextStyle(
@@ -102,6 +103,31 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Future logIn() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+          child: SpinKitCircle(
+            size: 125,
+            duration: const Duration(seconds: 2),
+            itemBuilder: (BuildContext context, int index){
+              final colors = [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary, Colors.white];
+              final color = colors[index % colors.length];
+
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              );
+            },
+          ),
+        );
+      }
     );
   }
 }
