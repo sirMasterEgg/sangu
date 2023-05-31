@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
-  static const routeName = '/register';
+  static const routeName = '/auth/register';
 
   const RegisterPage({Key? key}) : super(key: key);
 

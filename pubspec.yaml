@@ -62,8 +62,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/images/login_icon.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -80,7 +80,7 @@ flutter:
   fonts:
     - family: SofiaPro
       fonts:
-        - asset: fonts/sofiapro-light.otf
+        - asset: fonts/SofiaProRegular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
