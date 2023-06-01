@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sangu/ui/app/profile.dart';
+import 'package:sangu/ui/widgets/home_card.dart';
 
 import '../widgets/bottom_navigation_bar.dart';
 
@@ -13,15 +14,39 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _auth = FirebaseAuth.instance;
-  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final User? user = _auth.currentUser;
     return Container(
-      child: Center(
-        child: Text(user?.email??"tes")
-      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            HomeCard(
+              title: "I'm owed!",
+              value: 10000000,
+              warna: Theme.of(context).colorScheme.secondary,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                HomeCard(
+                  title: "My costs",
+                  value: 35000000,
+                  warna: Theme.of(context).colorScheme.onSecondary,
+                ),
+                HomeCard(
+                  title: "Total costs",
+                  value: -25000000,
+                  warna: Colors.white,
+                ),
+              ],
+            ),
+          ],
+        ),
+      )
     );
   }
 }
