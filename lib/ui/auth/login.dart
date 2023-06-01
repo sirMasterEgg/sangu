@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:sangu/ui/app/app.dart';
+import 'package:sangu/ui/app/home.dart';
 import 'package:sangu/ui/auth/register.dart';
 
 class LoginPage extends StatefulWidget {
-  static const routeName  = '/auth/logindaniel';
+  static const routeName  = '/auth/login';
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -27,6 +29,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    if(_auth.currentUser != null){
+      return const AppPage();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("SANGU"),
@@ -100,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                   )
               ),
               TextButton(onPressed: (){
-                Navigator.pushNamed(context, RegisterPage.routeName);
+                Navigator.of(context).pushReplacementNamed(RegisterPage.routeName);
               }, child: const Text(
                   'Register Here',
                   style: TextStyle(
@@ -151,14 +157,19 @@ class _LoginPageState extends State<LoginPage> {
       }
     );
 
+
     try {
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
       user = userCredential.user;
+      const snackbar =  SnackBar(content: Text('Login Success'));
+      messenger.showSnackBar(snackbar);
+      Navigator.pop(context);
+      navigator.pushReplacementNamed(AppPage.routeName);
     } on FirebaseAuthException catch (e) {
         const snackbar = SnackBar(content: Text('Invalid credentials'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
-    } finally {
-      Navigator.pop(context);
     }
 
   }

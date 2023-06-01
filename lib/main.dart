@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sangu/ui/app/app.dart';
 import 'package:sangu/ui/app/profile.dart';
+import 'package:sangu/ui/app/home.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
 import 'firebase_options.dart';
@@ -29,11 +31,11 @@ class MyApp extends StatelessWidget {
           ),
           fontFamily: 'SofiaPro'
         ),
-        initialRoute: ProfilePage.routeName,
+        initialRoute: LoginPage.routeName,
         routes: {
           LoginPage.routeName : (context) => const LoginPage(),
           RegisterPage.routeName : (context) => const RegisterPage(),
-          ProfilePage.routeName : (context) => const ProfilePage(),
+          AppPage.routeName : (context) => const AppPage(),
         }
     );
   }

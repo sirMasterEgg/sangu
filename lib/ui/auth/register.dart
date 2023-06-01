@@ -108,7 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               TextButton(
                 onPressed: (){
-                  Navigator.pushNamed(context, LoginPage.routeName);
+                  Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
                 },
                 child: const Text(
                   'Login Here',
@@ -125,6 +125,19 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future register() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter email, password, and confirm password'),
+        ),
+      );
+      return;
+    }
+
     showDialog(
         context: context,
         builder: (context) {
@@ -149,10 +162,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     try {
-      final email = _emailController.text;
-      final password = _passwordController.text;
-      final confirmPassword = _confirmPasswordController.text;
-
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
       if (password != confirmPassword) {
         const snackbar = SnackBar(content: Text('Password and Confirm Password not match'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
@@ -163,8 +174,8 @@ class _RegisterPageState extends State<RegisterPage> {
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
       const snackbar =  SnackBar(content: Text('Register Success'));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-      Navigator.of(context).pop();
+      messenger.showSnackBar(snackbar);
+      navigator.pop();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         const snackbar = SnackBar(content: Text('The password provided is too weak.'));

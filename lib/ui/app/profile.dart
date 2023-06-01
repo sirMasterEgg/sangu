@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sangu/ui/widgets/bottom_navigation_bar.dart';
 
+import 'home.dart';
+
 class ProfilePage extends StatefulWidget {
-  static const routeName = '/app/profile';
 
   const ProfilePage({Key? key}) : super(key: key);
 
@@ -15,17 +16,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const Center(
-        child: Text('Profile Page'),
+    return Container(
+      child: const Center(
+        child: Text("Profile"),
       ),
-      bottomNavigationBar: Builder(builder: (context) {
-        return BottomNavBar(currentIndex: _currentIndex, onTap: (index){
-          setState(() {
-            _currentIndex = index;
-          });
-        });
-      }),
     );
   }
 }
