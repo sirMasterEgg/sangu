@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sangu/ui/app/profile.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
 import 'firebase_options.dart';
@@ -24,13 +25,15 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch().copyWith(
             primary: const Color(0xFF1F2128),
             secondary: const Color(0xFFDFF169),
+            onSecondary: const Color(0xFFAEBDC2),
           ),
           fontFamily: 'SofiaPro'
         ),
-        initialRoute: LoginPage.routeName,
+        initialRoute: ProfilePage.routeName,
         routes: {
           LoginPage.routeName : (context) => const LoginPage(),
           RegisterPage.routeName : (context) => const RegisterPage(),
+          ProfilePage.routeName : (context) => const ProfilePage(),
         }
     );
   }
