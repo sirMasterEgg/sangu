@@ -14,10 +14,9 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _auth = FirebaseAuth.instance;
-  var _emailController = TextEditingController();
-  var _passwordController = TextEditingController();
-  var _confirmPasswordController = TextEditingController();
-  bool _obscureText = true;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +82,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               Padding(
-                  padding: EdgeInsets.only(top: 24.0),
+                  padding: const EdgeInsets.only(top: 24.0),
                   child: TextButton(
                     style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(16.0)),
+                      padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(16.0)),
                       backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.primary),
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -155,7 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final confirmPassword = _confirmPasswordController.text;
 
       if (password != confirmPassword) {
-        final snackbar = SnackBar(content: Text('Password and Confirm Password not match'));
+        const snackbar = SnackBar(content: Text('Password and Confirm Password not match'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
         Navigator.of(context).pop();
         return;
@@ -163,12 +162,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
-      final snackbar =  SnackBar(content: Text('Register Success'));
+      const snackbar =  SnackBar(content: Text('Register Success'));
       ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Navigator.of(context).pop();
-    } on Exception catch (e) {
-      final snackbar = SnackBar(content: Text(e.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        const snackbar = SnackBar(content: Text('The password provided is too weak.'));
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+        return;
+      } else if (e.code == 'email-already-in-use') {
+        const snackbar = SnackBar(content: Text('The account already exists for that email.'));
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+        return;
+      }
+    }
+    finally {
       Navigator.of(context).pop();
     }
   }

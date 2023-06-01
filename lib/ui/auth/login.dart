@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sangu/ui/auth/register.dart';
@@ -11,8 +12,18 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  var _emailController;
-  var _passwordController;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
+
+  User? user;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +75,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Padding(
-                  padding: EdgeInsets.only(top: 24.0),
+                  padding: const EdgeInsets.only(top: 24.0),
                   child: TextButton(
                     style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(16.0)),
+                      padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(16.0)),
                       backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.primary),
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -76,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                         )
                       ),
                     ),
-                    onPressed: (){
+                    onPressed: () {
                       logIn();
                     },
                     child: Text(
@@ -105,6 +116,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future logIn() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter email and password'),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -127,5 +150,16 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     );
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
+      user = userCredential.user;
+    } on FirebaseAuthException catch (e) {
+        const snackbar = SnackBar(content: Text('Invalid credentials'));
+        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+    } finally {
+      Navigator.pop(context);
+    }
+
   }
 }
