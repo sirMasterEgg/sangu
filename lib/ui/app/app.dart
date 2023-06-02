@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sangu/ui/app/create/add_user.dart';
 import 'package:sangu/ui/app/friends.dart';
 import 'package:sangu/ui/app/home.dart';
 import 'package:sangu/ui/app/profile.dart';
@@ -27,6 +28,16 @@ class _AppPageState extends State<AppPage> {
       appBar: AppBar(
         title: const Text("SANGU"),
       ),
+      floatingActionButton: _currentIndex==0?FloatingActionButton(
+        onPressed: (){
+          Navigator.pushNamed(context, AddUserPage.routeName);
+        },
+        backgroundColor: Colors.white,
+        child: Icon(
+          Icons.add,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ):null,
       body:_children[_currentIndex],
       bottomNavigationBar: Builder(builder: (context) {
         return BottomNavBar(currentIndex: _currentIndex, onTap: (index){
