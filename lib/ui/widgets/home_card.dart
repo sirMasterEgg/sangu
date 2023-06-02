@@ -36,6 +36,6 @@ class HomeCard extends StatelessWidget {
           )
         ),
       ),
-    );;
+    );
   }
 }

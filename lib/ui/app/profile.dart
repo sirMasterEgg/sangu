@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
@@ -196,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: EdgeInsets.all(10.0),
                   child: Text('Logout'),
                 )
-            )
+            ),
           ]
         ),
       ),
@@ -209,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
       keyboardType: TextInputType.emailAddress,
       hint: 'Email',
       labelText: 'Email',
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.done,
       enabled: false,
       prefixIcon: const Icon(Icons.email_outlined),
     );
@@ -221,7 +219,7 @@ class _ProfilePageState extends State<ProfilePage> {
       keyboardType: TextInputType.text,
       hint: 'Name',
       labelText: 'Name',
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.done,
       prefixIcon: const Icon(Icons.person_outline),
     );
   }
@@ -245,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         onPressed: onPressed,
       ),
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.done,
       prefixIcon: const Icon(Icons.lock_outline),
     );
   }

@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
       messenger.showSnackBar(snackbar);
       Navigator.pop(context);
       navigator.pushReplacementNamed(AppPage.routeName);
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (_) {
         const snackbar = SnackBar(content: Text('Invalid credentials'));
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
         Navigator.pop(context);

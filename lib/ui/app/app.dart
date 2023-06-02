@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sangu/ui/app/friends.dart';
 import 'package:sangu/ui/app/home.dart';
 import 'package:sangu/ui/app/profile.dart';
 
@@ -16,7 +17,7 @@ class _AppPageState extends State<AppPage> {
   int _currentIndex = 0;
   final List<Widget> _children = [
     const HomePage(),
-    const HomePage(),
+    const FriendsPage(),
     const ProfilePage(),
   ];
 
