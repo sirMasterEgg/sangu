@@ -18,10 +18,17 @@ class _AddUserPageState extends State<AddUserPage> {
     {"name": "daniel", "email": "daniel@gmail.com", "username": "kitsunne",},
   ];
   List<Map<String, dynamic>> _picked = [];
+  final _searchController = TextEditingController();
+
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final _searchController = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: const Text("SANGU"),
@@ -33,6 +40,7 @@ class _AddUserPageState extends State<AddUserPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FloatingActionButton(
+              heroTag: "back",
               onPressed: (){
                 Navigator.pop(context);
               },
@@ -44,6 +52,7 @@ class _AddUserPageState extends State<AddUserPage> {
             ),
           ),
           FloatingActionButton(
+            heroTag: "next",
             onPressed: (){
 
             },

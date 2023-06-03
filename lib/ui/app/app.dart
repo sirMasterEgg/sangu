@@ -28,7 +28,8 @@ class _AppPageState extends State<AppPage> {
       appBar: AppBar(
         title: const Text("SANGU"),
       ),
-      floatingActionButton: _currentIndex==0?FloatingActionButton(
+      floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
+        heroTag: "add_user",
         onPressed: (){
           Navigator.pushNamed(context, AddUserPage.routeName);
         },
@@ -37,7 +38,7 @@ class _AppPageState extends State<AppPage> {
           Icons.add,
           color: Theme.of(context).colorScheme.primary,
         ),
-      ):null,
+      ) : null,
       body:_children[_currentIndex],
       bottomNavigationBar: Builder(builder: (context) {
         return BottomNavBar(currentIndex: _currentIndex, onTap: (index){

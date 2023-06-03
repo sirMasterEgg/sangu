@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
@@ -23,6 +26,10 @@ class _ProfilePageState extends State<ProfilePage> {
   final _oldPasswordController = TextEditingController();
   final _emailController = TextEditingController();
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _db = FirebaseFirestore.instance;
+  Timestamp? _timeStampUsername;
+  String? _displayName;
 
   @override
   void dispose() {
@@ -31,22 +38,51 @@ class _ProfilePageState extends State<ProfilePage> {
     _oldPasswordController.dispose();
     _emailController.dispose();
     _nameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    _emailController.text = _auth.currentUser!.email!;
-    _nameController.text = _auth.currentUser!.displayName!;
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
 
+  Future<void> _loadUserData() async {
+    final results = await _db.collection('users')
+        .where('email', isEqualTo: _auth.currentUser!.email!)
+        .limit(1)
+        .get();
+
+    _emailController.text = _auth.currentUser!.email!;
+
+    if(results.docs.isEmpty){
+      return;
+    }
+
+    final data = results.docs.first.data();
+    _usernameController.text = data['username'] ?? '';
+    _nameController.text = data['display_name'] ?? '';
+    setState(() {
+      _timeStampUsername = data['username_created_at'];
+      _displayName = data['display_name'];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 5),
             nameWidget(),
+            const SizedBox(height: 20),
+            usernameWidget(),
+            const SizedBox(height: 5),
+            const Text('* Username can only be changed once'),
             const SizedBox(height: 20),
             emailWidget(),
             const SizedBox(height: 20),
@@ -87,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 5),
             const Text('* Old password only for change password'),
-            const SizedBox(height: 90),
+            const SizedBox(height: 20),
             TextButton(
                 style: ButtonStyle(
                   shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -110,10 +146,48 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final focus = FocusScope.of(context);
+
+                  if (_timeStampUsername == null && _usernameController.text.isNotEmpty){
+                    final registeredUsername = await _db.collection('users')
+                        .where('username', isEqualTo: _usernameController.text)
+                        .limit(1)
+                        .get();
+
+                    if (registeredUsername.docs.isNotEmpty){
+                      messenger.showSnackBar(
+                          const SnackBar(content: Text('Username already registered'))
+                      );
+                      focus.requestFocus(FocusNode());
+                      return;
+                    }
+
+                    await _db.collection('users')
+                        .doc(_auth.currentUser!.uid)
+                        .set({
+                      'email': _auth.currentUser!.email!,
+                      'username': _usernameController.text,
+                      'username_created_at': DateTime.now()
+                    }, SetOptions(merge: true));
+                    setState(() {
+                      _timeStampUsername = Timestamp.now();
+                    });
+                    messenger.showSnackBar(
+                        const SnackBar(content: Text('Successfully update the username'))
+                    );
+                  }
+
                   // change name
-                  if (_nameController.text != _auth.currentUser!.displayName!) {
-                    await _auth.currentUser!.updateDisplayName(_nameController.text);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  String name = _displayName ?? '';
+                  if (_nameController.text != name) {
+                    await _db.collection('users')
+                        .doc(_auth.currentUser!.uid)
+                        .set({
+                      'email': _auth.currentUser!.email!,
+                      'display_name': _nameController.text,
+                    }, SetOptions(merge: true));
+                    messenger.showSnackBar(
                         const SnackBar(content: Text('Successfully update the name'))
                     );
                   }
@@ -123,14 +197,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     _confirmPasswordController.text.isNotEmpty
                   ){
                     if (_newPasswordController.text != _confirmPasswordController.text){
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                           const SnackBar(content: Text('New password and confirm password not match'))
                       );
                       return;
                     }
 
                     if (_oldPasswordController.text.isEmpty){
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                           const SnackBar(content: Text('Old password is required'))
                       );
                       return;
@@ -148,13 +222,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       print(e.toString());
                     }
 
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                         const SnackBar(content: Text('Successfully update the password'))
                     );
                     _oldPasswordController.clear();
                     _newPasswordController.clear();
                     _confirmPasswordController.clear();
-                    FocusScope.of(context).unfocus();
+                    focus.unfocus();
                     return;
                   }
 
@@ -221,6 +295,18 @@ class _ProfilePageState extends State<ProfilePage> {
       labelText: 'Name',
       textInputAction: TextInputAction.done,
       prefixIcon: const Icon(Icons.person_outline),
+    );
+  }
+
+  Widget usernameWidget (){
+    return MaterialTextField(
+      controller: _usernameController,
+      keyboardType: TextInputType.text,
+      hint: 'Username',
+      enabled: _timeStampUsername == null,
+      labelText: 'Username',
+      textInputAction: TextInputAction.done,
+      prefixIcon: const Icon(Icons.alternate_email),
     );
   }
 

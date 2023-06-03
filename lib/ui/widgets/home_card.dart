@@ -25,12 +25,12 @@ class HomeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-                child: Text(title, style: TextStyle(fontSize: 16.0)),
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+                child: Text(title, style: const TextStyle(fontSize: 16.0)),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Text(CurrencyFormat.convertToIdr(value, 0), style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
+                child: Text(CurrencyFormat.convertToIdr(value, 0), style: const TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
               ),
             ],
           )

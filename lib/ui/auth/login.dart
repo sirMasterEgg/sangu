@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:material_text_fields/material_text_fields.dart';
 import 'package:sangu/ui/app/app.dart';
 import 'package:sangu/ui/auth/register.dart';
 
@@ -16,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
+  bool obscureText = true;
 
   User? user;
 
@@ -51,33 +53,34 @@ class _LoginPageState extends State<LoginPage> {
                   height: 150
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, top: 24.0),
-                child: Text('Email'),
-              ),
-              TextField(
+              const SizedBox(height: 24.0),
+              MaterialTextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'ex: jason@gmail.com',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  ),
-                ),
+                hint: 'Email',
+                labelText: 'Email',
+                textInputAction: TextInputAction.next,
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, top: 24.0),
-                child: Text('Password'),
-              ),
-              TextField(
+              const SizedBox(height: 24.0),
+              MaterialTextField(
                 controller: _passwordController,
                 keyboardType: TextInputType.text,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                hint: 'Password',
+                labelText: 'Password',
+                obscureText: obscureText,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      obscureText = !obscureText;
+                    });
+                  },
                 ),
+                textInputAction: TextInputAction.done,
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
               Padding(
                   padding: const EdgeInsets.only(top: 24.0),

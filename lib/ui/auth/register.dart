@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:material_text_fields/material_text_fields.dart';
 import 'package:sangu/ui/auth/login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -14,9 +16,12 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool obscureText = true;
+  bool obscureTextConfirm = true;
 
   @override
   Widget build(BuildContext context) {
@@ -39,47 +44,54 @@ class _RegisterPageState extends State<RegisterPage> {
                     height: 150
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, top: 24.0),
-                child: Text('Email'),
-              ),
-              TextField(
+              const SizedBox(height: 24.0),
+              MaterialTextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'ex: jason@gmail.com',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  ),
-                ),
+                hint: 'Email',
+                labelText: 'Email',
+                textInputAction: TextInputAction.next,
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, top: 24.0),
-                child: Text('Password'),
-              ),
-              TextField(
+              const SizedBox(height: 24.0),
+              MaterialTextField(
                 controller: _passwordController,
                 keyboardType: TextInputType.text,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                hint: 'Password',
+                labelText: 'Password',
+                obscureText: obscureText,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      obscureText = !obscureText;
+                    });
+                  },
                 ),
+                textInputAction: TextInputAction.next,
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8.0, top: 24.0),
-                child: Text('Confirm Password'),
-              ),
-              TextField(
+              const SizedBox(height: 24.0),
+              MaterialTextField(
                 controller: _confirmPasswordController,
                 keyboardType: TextInputType.text,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                hint: 'Confirm Password',
+                labelText: 'Confirm Password',
+                obscureText: obscureTextConfirm,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureTextConfirm ? Icons.visibility : Icons.visibility_off,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      obscureTextConfirm = !obscureTextConfirm;
+                    });
+                  },
                 ),
+                textInputAction: TextInputAction.done,
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
               Padding(
                   padding: const EdgeInsets.only(top: 24.0),
@@ -129,15 +141,6 @@ class _RegisterPageState extends State<RegisterPage> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter email, password, and confirm password'),
-        ),
-      );
-      return;
-    }
-
     showDialog(
         context: context,
         builder: (context) {
@@ -161,34 +164,45 @@ class _RegisterPageState extends State<RegisterPage> {
         }
     );
 
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      const snackbar = SnackBar(content: Text('Please enter email, password, and confirm password'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      Navigator.of(context).pop();
+      return;
+    }
+
+    if (password != confirmPassword) {
+      const snackbar = SnackBar(content: Text('Password and Confirm Password not match'));
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
     try {
-      final navigator = Navigator.of(context);
-      final messenger = ScaffoldMessenger.of(context);
-      if (password != confirmPassword) {
-        const snackbar = SnackBar(content: Text('Password and Confirm Password not match'));
-        ScaffoldMessenger.of(context).showSnackBar(snackbar);
-        Navigator.of(context).pop();
-        return;
-      }
-
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
-
+      await _db.collection('users')
+          .doc(_auth.currentUser!.uid)
+          .set({
+        'email': _auth.currentUser!.email!,
+      }, SetOptions(merge: true));
       const snackbar =  SnackBar(content: Text('Register Success'));
       messenger.showSnackBar(snackbar);
-      navigator.pop();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         const snackbar = SnackBar(content: Text('The password provided is too weak.'));
-        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+        messenger.showSnackBar(snackbar);
         return;
       } else if (e.code == 'email-already-in-use') {
         const snackbar = SnackBar(content: Text('The account already exists for that email.'));
-        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+        messenger.showSnackBar(snackbar);
         return;
       }
     }
     finally {
       Navigator.of(context).pop();
+      navigator.pushReplacementNamed(LoginPage.routeName);
     }
   }
 
@@ -196,6 +210,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }
