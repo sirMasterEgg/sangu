@@ -20,7 +20,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      color: Theme.of(context).colorScheme.onSecondary,
+      color: isGroup ? Colors.grey.shade200 : Theme.of(context).colorScheme.secondary,
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
@@ -34,8 +34,9 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
                       topRight: Radius.circular(10))
               ),
               context: context,
-              builder: (context) => Container(
-                height: 200,
+              isScrollControlled: true,
+              builder: (context) => SizedBox(
+                height: MediaQuery.of(context).size.height * 0.2,
                 child: Column(
                   children: [
                     Container(
@@ -45,11 +46,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
                             color: Color(0xFF1F2128),
                             borderRadius: BorderRadius.all(Radius.circular(20)),
                         ),
-                        margin: EdgeInsets.only(bottom: 10, top: 2)
-                    ),
-                    ListTile(
-                      title: const Text('tes'),
-                      leading: Icon(Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
+                        margin: const EdgeInsets.only(bottom: 10, top: 2)
                     ),
                     ListTile(
                       title: const Text('tes'),
@@ -62,11 +59,17 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
                   ],
                 ),
               )
+
           );
         },
         child: ListTile(
-          title: const Text('tes'),
-          leading: Icon(this.isGroup ? Icons.group_outlined : Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
+          title: Text(name),
+          leading: CircleAvatar(
+              radius: 20,
+              backgroundColor: Theme.of(context).colorScheme.onSecondary,
+              child: Icon(isGroup ? Icons.group_outlined : Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
+          ),
+          subtitle: Text(username),
         ),
       ),
     );

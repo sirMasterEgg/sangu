@@ -47,9 +47,22 @@ class _FriendsPageState extends State<FriendsPage> {
       return;
     }
 
+
+    List<Map<String, dynamic>> noNameUser = [];
+
     for (var doc in result) {
       final data = doc.data();
-      _allFriends.add(data);
+      var temp = parseUserWithoutName(data, _auth.currentUser!.email!);
+      noNameUser.add(temp);
+    }
+    final getName = await _db.collection('users')
+        .where('email', whereIn: noNameUser.map((e) => e['email']).toList())
+        .get();
+
+    for (var doc in getName.docs) {
+      final data = doc.data();
+      var temp = parseUserWithName(data);
+      _allFriends.add(temp);
     }
 
     setState(() {
@@ -82,14 +95,23 @@ class _FriendsPageState extends State<FriendsPage> {
     } else {
       results = _allFriends
           .where((user) {
-              return user['email'].toLowerCase().contains(enteredKeyword.toLowerCase());
+              final findByUsername = user['username'].toLowerCase().contains(enteredKeyword.toLowerCase());
+              final findByName = user['display_name'].toLowerCase().contains(enteredKeyword.toLowerCase());
+
+              if (findByUsername) {
+                return findByUsername;
+              }
+              else if (findByName) {
+                return findByName;
+              }
+              else {
+                return findByName || findByUsername;
+              }
             }
           )
           .toList();
-      // we use the toLowerCase() method to make it case-insensitive
     }
 
-    // Refresh the UI
     setState(() {
       _foundFriends = results;
     });
@@ -97,7 +119,6 @@ class _FriendsPageState extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(_foundFriends);
     return Padding(
         padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
         child: Column(
@@ -228,19 +249,16 @@ class _FriendsPageState extends State<FriendsPage> {
             Expanded(
                 child:_foundFriends.isNotEmpty ? ListView.builder(
                   itemCount: _foundFriends.length,
-                  itemBuilder: (context, index) => Card(
-                    // key: ValueKey(_foundFriends[index]["id"]),
-                    color: Theme.of(context).colorScheme.secondary,
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: ListTile(
-                      leading: Text(
-                        _foundFriends[index]['to_username'].toString(),
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      title: Text(_foundFriends[index]['to_username']),
-                    ),
-                  ),
+                  itemBuilder: (context, index) {
+                    return AddFriendsOrGroupListTile(
+                        isGroup: false,
+                        name: _foundFriends[index]['display_name'],
+                        username: _foundFriends[index]['username'],
+                        onClick: () {
+
+                        }
+                    );
+                  },
                 ) : const Text( 'No results found', style: TextStyle(fontSize: 18)),
             ),
 
@@ -458,5 +476,29 @@ class _FriendsPageState extends State<FriendsPage> {
     }
   }
 
+  Map<String, dynamic> parseUserWithoutName(Map<String, dynamic> user, String emailCurrentUser){
+    if (user['to_email'] == emailCurrentUser){
+      return {
+        'username' : user['from_username'],
+        'email' : user['from_email'],
+        'status' : user['status'],
+      };
+    }
+    else {
+      return {
+        'username' : user['to_username'],
+        'email' : user['to_email'],
+        'status' : user['status'],
+      };
+    }
+  }
 
+  Map<String, dynamic> parseUserWithName(Map<String, dynamic> user) {
+      return {
+        'username' : user['username'],
+        'email' : user['email'],
+        'display_name' : user['display_name'] ?? user['username'],
+      };
+  }
 }
+
