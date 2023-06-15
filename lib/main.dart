@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:material_text_fields/theme/material_text_field_theme.dart';
 import 'package:sangu/ui/app/app.dart';
 import 'package:sangu/ui/app/create/add_user.dart';
+import 'package:sangu/ui/app/create/create_group.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
 import 'firebase_options.dart';
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
           RegisterPage.routeName : (context) => const RegisterPage(),
           AppPage.routeName : (context) => const AppPage(),
           AddUserPage.routeName : (context) => const AddUserPage(),
+          CreateGroupPage.routeName : (context) => const CreateGroupPage(),
         }
     );
   }

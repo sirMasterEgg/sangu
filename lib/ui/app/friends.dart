@@ -3,7 +3,10 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
 import 'package:material_text_fields/material_text_fields.dart';
+import 'package:sangu/helpers/firestore_manager.dart';
+import 'package:sangu/ui/app/create/create_group.dart';
 import 'package:sangu/ui/widgets/add_friends_or_group_list_tile.dart';
 import 'package:uuid/uuid.dart';
 
@@ -15,30 +18,32 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  final _db = FirebaseFirestore.instance;
+  final _firestoreManager = FirestoreManager();
   final _auth = FirebaseAuth.instance;
   final _searchController = TextEditingController();
   final List<Map<String, dynamic>> _allFriends = [];
   final uuid = const Uuid();
-  // This list holds the data for the list view
+
   List<Map<String, dynamic>> _foundFriends = [];
   Map<String, dynamic> _user = {};
+  List<Map<String, dynamic>> _groups = [];
 
   @override
   initState() {
     getUserDetail();
     fetchFriend();
+    fetchGroups();
 
     super.initState();
   }
 
   Future fetchFriend() async {
-    final toResult = await _db.collection('friends')
-        .where('to_email', isEqualTo: _auth.currentUser?.email)
+    final toResult = await _firestoreManager.getInstance().collection('friends')
+        .where('to.email', isEqualTo: _auth.currentUser?.email)
         .where('status', isEqualTo: 1)
         .get();
-    final fromResult = await _db.collection('friends')
-        .where('from_email', isEqualTo: _auth.currentUser?.email)
+    final fromResult = await _firestoreManager.getInstance().collection('friends')
+        .where('from.email', isEqualTo: _auth.currentUser?.email)
         .where('status', isEqualTo: 1)
         .get();
     final result = toResult.docs + fromResult.docs;
@@ -47,21 +52,9 @@ class _FriendsPageState extends State<FriendsPage> {
       return;
     }
 
-
-    List<Map<String, dynamic>> noNameUser = [];
-
     for (var doc in result) {
       final data = doc.data();
       var temp = parseUserWithoutName(data, _auth.currentUser!.email!);
-      noNameUser.add(temp);
-    }
-    final getName = await _db.collection('users')
-        .where('email', whereIn: noNameUser.map((e) => e['email']).toList())
-        .get();
-
-    for (var doc in getName.docs) {
-      final data = doc.data();
-      var temp = parseUserWithName(data);
       _allFriends.add(temp);
     }
 
@@ -70,8 +63,30 @@ class _FriendsPageState extends State<FriendsPage> {
     });
   }
 
+  Future fetchGroups () async {
+    final myUser = await _firestoreManager.getInstance().collection('users').doc(_auth.currentUser?.uid).get();
+
+    final result = await _firestoreManager.getInstance().collection('groups')
+        .where('members', arrayContains: myUser.data())
+        .get();
+
+    if (result.docs.isEmpty) {
+      return;
+    }
+
+    List<Map<String, dynamic>> tempGroups = [];
+    for (var doc in result.docs) {
+      final data = doc.data();
+      tempGroups.add(data);
+    }
+
+    setState(() {
+      _groups = tempGroups;
+    });
+  }
+
   Future getUserDetail() async {
-    final results = await _db.collection('users')
+    final results = await _firestoreManager.getInstance().collection('users')
         .where('email', isEqualTo: _auth.currentUser!.email!)
         .limit(1)
         .get();
@@ -208,7 +223,7 @@ class _FriendsPageState extends State<FriendsPage> {
             const SizedBox(
               height: 20,
             ),
-            /*const Text('Groups'),
+            const Text('Groups'),
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -218,7 +233,7 @@ class _FriendsPageState extends State<FriendsPage> {
               margin: const EdgeInsets.symmetric(vertical: 10),
               child: InkWell(
                 onTap: () {
-                  // todo: create a group
+                  Navigator.pushNamed(context, CreateGroupPage.routeName);
                 },
                 child: ListTile(
                   title: const Text('Create a group'),
@@ -227,23 +242,26 @@ class _FriendsPageState extends State<FriendsPage> {
               ),
             ),
             Expanded(
-                child:_foundFriends.isNotEmpty ? ListView.builder(
-                  itemCount: _foundFriends.length,
+                child: ListView.builder(
+                  itemCount: _groups.length,
                   itemBuilder: (context, index) {
-                    var user = _foundFriends[index];
+                    var group = _groups[index];
+                    final timestamp = group['created_at'] as Timestamp;
+                    DateTime dateTime = timestamp.toDate();
+                    String formattedDate = DateFormat('dd MMMM yyyy').format(dateTime);
                     return AddFriendsOrGroupListTile(
                         isGroup: true,
-                        name: user['name'],
-                        username: user['name'],
+                        name: group['name'],
+                        username: 'Created: $formattedDate',
                         onClick: () {
-
+                          // todo: detaill group
                         },
                     );
                   },
-                ) : const Text( 'No results found', style: TextStyle(fontSize: 18)),
+                ),
             ),
             Divider(height: 5, thickness: 2, color: Theme.of(context).colorScheme.primary,),
-            const SizedBox(height: 10),*/
+            const SizedBox(height: 10),
             const Text('Friends'),
             const SizedBox(height: 10),
             Expanded(
@@ -255,7 +273,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         name: _foundFriends[index]['display_name'],
                         username: _foundFriends[index]['username'],
                         onClick: () {
-
+                          // todo: detail friend
                         }
                     );
                   },
@@ -311,7 +329,7 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   Future addFriendByEmail({messenger = ScaffoldMessengerState, navigator = NavigatorState, focus = FocusScopeNode, email = String}) async {
-    final getUserByEmail = await _db.collection('users')
+    final getUserByEmail = await _firestoreManager.getInstance().collection('users')
         .where('email', isEqualTo: email)
         .get();
 
@@ -325,15 +343,15 @@ class _FriendsPageState extends State<FriendsPage> {
     }
 
     final userSearched = getUserByEmail.docs.first.data();
-    final getAddedBackUser = await _db.collection('friends')
-        .where('to_email', isEqualTo: _auth.currentUser?.email)
+    final getAddedBackUser = await _firestoreManager.getInstance().collection('friends')
+        .where('to.email', isEqualTo: _auth.currentUser?.email)
         .get();
 
     // add friend
     if (getAddedBackUser.docs.isEmpty) {
-      final getFriendRequest = await _db.collection('friends')
-          .where('from_email', isEqualTo: _auth.currentUser?.email)
-          .where('to_email', isEqualTo: userSearched['email'])
+      final getFriendRequest = await _firestoreManager.getInstance().collection('friends')
+          .where('from.email', isEqualTo: _auth.currentUser?.email)
+          .where('to.email', isEqualTo: userSearched['email'])
           .get();
 
       if (getFriendRequest.docs.isNotEmpty) {
@@ -345,13 +363,23 @@ class _FriendsPageState extends State<FriendsPage> {
         return;
       }
 
-      await _db.collection('friends').doc(uuid.v4()).set({
+      /*await _db.collection('friends').doc(uuid.v4()).set({
         'to_email': userSearched['email'],
         'to_username': userSearched['username'],
         'from_email': _auth.currentUser?.email,
         'from_username': _user['username'],
         'status': 0,
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true));*/
+      await _firestoreManager.updateFriend(
+          uuid.v4(),
+          from: _user,
+          to: userSearched,
+          // to_email: userSearched['email'],
+          // to_username: userSearched['username'],
+          // from_email: _auth.currentUser?.email,
+          // from_username: _user['username'],
+          status: 0,
+      );
 
       messenger.showSnackBar(
         const SnackBar(
@@ -363,14 +391,18 @@ class _FriendsPageState extends State<FriendsPage> {
     else {
       for (var doc in getAddedBackUser.docs) {
         final data = doc.data();
-        if (data['from_email'] == userSearched['email'] && data['status'] == 0){
-          await _db.collection('friends').doc(doc.id).set({
+        if (data['from']['email'] == userSearched['email'] && data['status'] == 0){
+          /*await _db.collection('friends').doc(doc.id).set({
             'to_email': _auth.currentUser?.email,
             'to_username': _user['username'],
             'from_email': userSearched['email'],
             'from_username': userSearched['username'],
             'status': 1,
-          }, SetOptions(merge: true));
+          }, SetOptions(merge: true));*/
+          await _firestoreManager.updateFriend(
+              doc.id,
+              status: 1,
+          );
           messenger.showSnackBar(
             const SnackBar(
               content: Text('You are now friends'),
@@ -381,7 +413,7 @@ class _FriendsPageState extends State<FriendsPage> {
           });
           return;
         }
-        else if (data['from_email'] == userSearched['email'] && data['status'] == 1){
+        else if (data['from']['email'] == userSearched['email'] && data['status'] == 1){
           messenger.showSnackBar(
             const SnackBar(
               content: Text('You are already friends'),
@@ -394,7 +426,7 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   Future addFriendByUsername({messenger = ScaffoldMessengerState, navigator = NavigatorState, focus = FocusScopeNode, username = String}) async {
-    final getUserByUsername = await _db.collection('users')
+    final getUserByUsername = await _firestoreManager.getInstance().collection('users')
         .where('username', isEqualTo: username)
         .get();
 
@@ -408,15 +440,15 @@ class _FriendsPageState extends State<FriendsPage> {
     }
 
     final userSearched = getUserByUsername.docs.first.data();
-    final getAddedBackUser = await _db.collection('friends')
-        .where('to_email', isEqualTo: _auth.currentUser?.email)
+    final getAddedBackUser = await _firestoreManager.getInstance().collection('friends')
+        .where('to.email', isEqualTo: _auth.currentUser?.email)
         .get();
 
     // add friend
     if (getAddedBackUser.docs.isEmpty) {
-      final getFriendRequest = await _db.collection('friends')
-          .where('from_email', isEqualTo: _auth.currentUser?.email)
-          .where('to_email', isEqualTo: userSearched['email'])
+      final getFriendRequest = await _firestoreManager.getInstance().collection('friends')
+          .where('from.email', isEqualTo: _auth.currentUser?.email)
+          .where('to.email', isEqualTo: userSearched['email'])
           .get();
 
       if (getFriendRequest.docs.isNotEmpty) {
@@ -428,13 +460,23 @@ class _FriendsPageState extends State<FriendsPage> {
         return;
       }
 
-      await _db.collection('friends').doc(uuid.v4()).set({
+      /*await _db.collection('friends').doc(uuid.v4()).set({
         'to_email': userSearched['email'],
         'to_username': userSearched['username'],
         'from_email': _auth.currentUser?.email,
         'from_username': _user['username'],
         'status': 0,
-      }, SetOptions(merge: true));
+      }, SetOptions(merge: true));*/
+      await _firestoreManager.updateFriend(
+          uuid.v4(),
+          // to_email: userSearched['email'],
+          // to_username: userSearched['username'],
+          // from_email: _auth.currentUser?.email,
+          // from_username: _user['username'],
+          from: _user,
+          to: userSearched,
+          status: 0,
+      );
 
       messenger.showSnackBar(
         const SnackBar(
@@ -446,14 +488,15 @@ class _FriendsPageState extends State<FriendsPage> {
     else {
       for (var doc in getAddedBackUser.docs) {
         final data = doc.data();
-        if (data['from_email'] == userSearched['email'] && data['status'] == 0){
-          await _db.collection('friends').doc(doc.id).set({
+        if (data['from']['email'] == userSearched['email'] && data['status'] == 0){
+          /*await _db.collection('friends').doc(doc.id).set({
             'to_email': _auth.currentUser?.email,
             'to_username': _user['username'],
             'from_email': userSearched['email'],
             'from_username': userSearched['username'],
             'status': 1,
-          }, SetOptions(merge: true));
+          }, SetOptions(merge: true));*/
+          await _firestoreManager.updateFriend(doc.id, status: 1);
           messenger.showSnackBar(
             const SnackBar(
               content: Text('You are now friends'),
@@ -464,7 +507,7 @@ class _FriendsPageState extends State<FriendsPage> {
           });
           return;
         }
-        else if (data['from_email'] == userSearched['email'] && data['status'] == 1){
+        else if (data['from']['email'] == userSearched['email'] && data['status'] == 1){
           messenger.showSnackBar(
             const SnackBar(
               content: Text('You are already friends'),
@@ -477,28 +520,23 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   Map<String, dynamic> parseUserWithoutName(Map<String, dynamic> user, String emailCurrentUser){
-    if (user['to_email'] == emailCurrentUser){
+    if (user['to']['email'] == emailCurrentUser){
       return {
-        'username' : user['from_username'],
-        'email' : user['from_email'],
+        'display_name': user['from']['display_name'] ?? user['from']['username'] ?? user['from']['email'],
+        'username' : user['from']['email'],
+        'email' : user['from']['email'],
         'status' : user['status'],
       };
     }
     else {
       return {
-        'username' : user['to_username'],
-        'email' : user['to_email'],
+        'display_name': user['to']['display_name'] ?? user['to']['username'] ?? user['to']['email'],
+        'username' : user['to']['email'],
+        'email' : user['to']['email'],
         'status' : user['status'],
       };
     }
   }
 
-  Map<String, dynamic> parseUserWithName(Map<String, dynamic> user) {
-      return {
-        'username' : user['username'],
-        'email' : user['email'],
-        'display_name' : user['display_name'] ?? user['username'],
-      };
-  }
 }
 

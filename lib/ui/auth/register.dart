@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_text_fields/material_text_fields.dart';
+import 'package:sangu/helpers/firestore_manager.dart';
 import 'package:sangu/ui/auth/login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -16,7 +16,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _auth = FirebaseAuth.instance;
-  final _db = FirebaseFirestore.instance;
+  final _firestoreManager = FirestoreManager();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -182,11 +182,15 @@ class _RegisterPageState extends State<RegisterPage> {
     final navigator = Navigator.of(context);
     try {
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      await _db.collection('users')
+      _firestoreManager.updateSelectedUser(_auth.currentUser!.uid, email: _auth.currentUser!.email);
+      /**
+       * manual way
+       * await _db.collection('users')
           .doc(_auth.currentUser!.uid)
           .set({
-        'email': _auth.currentUser!.email!,
-      }, SetOptions(merge: true));
+          'email': _auth.currentUser!.email!,
+          }, SetOptions(merge: true));
+       */
       const snackbar =  SnackBar(content: Text('Register Success'));
       messenger.showSnackBar(snackbar);
     } on FirebaseAuthException catch (e) {

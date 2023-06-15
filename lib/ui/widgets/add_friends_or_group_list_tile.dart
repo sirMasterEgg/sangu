@@ -14,8 +14,63 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
     required this.onClick,
   }) : super(key: key);
 
+  final double modalBottomSheetItemHeight = 53;
+
+  List<Widget> generateListTileGroup ({required BuildContext context}) {
+    return [
+      SizedBox(
+        height: modalBottomSheetItemHeight,
+        child: ListTile(
+          title: const Text('Edit Group'),
+          leading: Icon(Icons.edit_outlined , color: Theme.of(context).colorScheme.primary,),
+          onTap: (){
+
+          },
+        ),
+      ),
+      SizedBox(
+        height: modalBottomSheetItemHeight,
+        child: ListTile(
+          title: const Text('Leave Group', style: TextStyle(color: Colors.red),),
+          leading: const Icon(Icons.logout_outlined , color: Colors.red,),
+          onTap: () {
+
+          },
+        ),
+      ),
+    ];
+  }
+  
+  List<Widget> generateListTilePerson ({required BuildContext context}) {
+    return [
+      SizedBox(
+        height: modalBottomSheetItemHeight,
+        child: ListTile(
+          title: const Text('Remove Friend', style: TextStyle(color: Colors.red),),
+          leading: const Icon(Icons.remove_circle_outline , color: Colors.red,),
+          onTap: () {
+
+          },
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> generateListTile ({required BuildContext context}) {
+    return isGroup
+        ? generateListTileGroup(context: context)
+        : generateListTilePerson(context: context);
+  }
+  
   @override
   Widget build(BuildContext context) {
+    int totalListTile = isGroup 
+        ? generateListTileGroup(context: context).length
+        : generateListTilePerson(context: context).length;
+    
+    double modalBottomSheetContainerHeight =
+        modalBottomSheetItemHeight * totalListTile + 22.5;
+
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -36,7 +91,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
               context: context,
               isScrollControlled: true,
               builder: (context) => SizedBox(
-                height: MediaQuery.of(context).size.height * 0.2,
+                height: modalBottomSheetContainerHeight,
                 child: Column(
                   children: [
                     Container(
@@ -48,14 +103,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
                         ),
                         margin: const EdgeInsets.only(bottom: 10, top: 2)
                     ),
-                    ListTile(
-                      title: const Text('tes'),
-                      leading: Icon(Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
-                    ),
-                    ListTile(
-                      title: const Text('tes'),
-                      leading: Icon(Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
-                    ),
+                    ...generateListTile(context: context)
                   ],
                 ),
               )

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
+import 'package:sangu/helpers/firestore_manager.dart';
 
 import '../auth/login.dart';
 
@@ -27,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _emailController = TextEditingController();
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _db = FirebaseFirestore.instance;
+  final _firestoreManager = FirestoreManager();
   Timestamp? _timeStampUsername;
   String? _displayName;
 
@@ -39,17 +40,20 @@ class _ProfilePageState extends State<ProfilePage> {
     _emailController.dispose();
     _nameController.dispose();
     _usernameController.dispose();
+
+    _firestoreManager.destroyUserListener();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    _firestoreManager.setUserListener();
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
-    final results = await _db.collection('users')
+    final results = await _firestoreManager.getInstance().collection('users')
         .where('email', isEqualTo: _auth.currentUser!.email!)
         .limit(1)
         .get();
@@ -150,10 +154,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   final focus = FocusScope.of(context);
 
                   if (_timeStampUsername == null && _usernameController.text.isNotEmpty){
-                    final registeredUsername = await _db.collection('users')
+                    final registeredUsername = await _firestoreManager.getInstance().collection('users')
                         .where('username', isEqualTo: _usernameController.text)
                         .limit(1)
                         .get();
+
 
                     if (registeredUsername.docs.isNotEmpty){
                       messenger.showSnackBar(
@@ -163,16 +168,27 @@ class _ProfilePageState extends State<ProfilePage> {
                       return;
                     }
 
-                    await _db.collection('users')
+                    await _firestoreManager.updateSelectedUser(
+                      _auth.currentUser!.uid,
+                      email: _auth.currentUser!.email,
+                      username: _usernameController.text,
+                      username_created_at: DateTime.now(),
+                    );
+                    /**
+                     * manual way
+                     * await _db.collection('users')
                         .doc(_auth.currentUser!.uid)
                         .set({
-                      'email': _auth.currentUser!.email!,
-                      'username': _usernameController.text,
-                      'username_created_at': DateTime.now()
-                    }, SetOptions(merge: true));
+                        'email': _auth.currentUser!.email!,
+                        'username': _usernameController.text,
+                        'username_created_at': DateTime.now()
+                        }, SetOptions(merge: true));
+                      * */
+
                     setState(() {
                       _timeStampUsername = Timestamp.now();
                     });
+
                     messenger.showSnackBar(
                         const SnackBar(content: Text('Successfully update the username'))
                     );
@@ -181,12 +197,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   // change name
                   String name = _displayName ?? '';
                   if (_nameController.text != name) {
-                    await _db.collection('users')
+                    _firestoreManager.updateSelectedUser(
+                      _auth.currentUser!.uid,
+                      display_name: _nameController.text
+                    );
+                    /**
+                     * manual way
+                     * await _db.collection('users')
                         .doc(_auth.currentUser!.uid)
                         .set({
-                      'email': _auth.currentUser!.email!,
-                      'display_name': _nameController.text,
-                    }, SetOptions(merge: true));
+                        'email': _auth.currentUser!.email!,
+                        'display_name': _nameController.text,
+                        }, SetOptions(merge: true));
+                     * */
                     messenger.showSnackBar(
                         const SnackBar(content: Text('Successfully update the name'))
                     );
