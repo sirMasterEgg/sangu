@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_text_fields/material_text_fields.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:sangu/helpers/firestore_manager.dart';
+import 'package:sangu/providers/picked_user_provider.dart';
 import 'package:sangu/ui/widgets/add_user_list_tile.dart';
+import 'package:provider/provider.dart';
 
 class AddUserPage extends StatefulWidget {
   static const routeName = '/app/create/add_user';
@@ -16,8 +19,8 @@ class AddUserPage extends StatefulWidget {
 class _AddUserPageState extends State<AddUserPage> {
   List<Map<String, dynamic>> _allUsers = [];
   List<Map<String, dynamic>> _foundUsers = [];
-  List<Map<String, dynamic>> _pickedUsers = [];
   List<Map<String, dynamic>> _allGroups = [];
+  bool _isLoading = true;
   final _firestoreManager = FirestoreManager();
   final _auth = FirebaseAuth.instance;
 
@@ -73,6 +76,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
     setState(() {
       _allGroups = tempGroups;
+      _isLoading = false;
     });
   }
 
@@ -113,7 +117,23 @@ class _AddUserPageState extends State<AddUserPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Consumer<PickedUserProvider>(
+        builder: (context, PickedUserProvider data, widget){return _isLoading ? Center(child: SpinKitCircle(
+          size: 125,
+          duration: const Duration(seconds: 2),
+          itemBuilder: (BuildContext context, int index){
+            final colors = [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.onSecondary];
+            final color = colors[index % colors.length];
+
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            );
+          },
+        ),) :
+        SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -140,7 +160,7 @@ class _AddUserPageState extends State<AddUserPage> {
                       _foundUsers += _allUsers.where((element) => element["username"].toString().toLowerCase().contains(value.toLowerCase())).toList();
                       _foundUsers += _allUsers.where((element) => element["email"].toString().toLowerCase().contains(value.toLowerCase())).toList();
                       _foundUsers = _foundUsers.toSet().toList();
-                      _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
+                      _foundUsers.removeWhere((element) => data.pickedUsers.contains(element));
                     });
                   },
                   keyboardType: TextInputType.emailAddress,
@@ -158,22 +178,22 @@ class _AddUserPageState extends State<AddUserPage> {
               ),
               ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _pickedUsers.length,
+                  itemCount: data.pickedUsers.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index){
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: AddUserListTile(
-                        name: _pickedUsers[index]["display_name"],
-                        username: _pickedUsers[index]["username"],
+                        name: data.pickedUsers[index]["display_name"],
+                        username: data.pickedUsers[index]["username"],
                         icon: Icons.remove,
                         iconColor: Colors.red,
                         tileColor: Theme.of(context).colorScheme.secondary,
                         type: Icons.person,
                         onClick: (){
                           setState(() {
-                            _foundUsers.add(_pickedUsers[index]);
-                            _pickedUsers.removeWhere((element) => _foundUsers.contains(element));
+                            _foundUsers.add(data.pickedUsers[index]);
+                            data.pickedUsers.removeWhere((element) => element["email"] == data.pickedUsers[index]["email"]);
                           });
                         },
                       )
@@ -212,13 +232,11 @@ class _AddUserPageState extends State<AddUserPage> {
                             setState(() {
                               final members = _allGroups[index]["members"];
                               for (var member in members) {
-                                //if member email is in _foundUser
                                 final temp = _allUsers.firstWhere((element) => element["email"] == member["email"]);
-                                if(temp != null){
-                                  _pickedUsers.add(temp);
-                                }
+                                data.pickedUsers.removeWhere((element) => element["email"] == member["email"]);
+                                data.pickedUsers.add(temp);
+                                _foundUsers.removeWhere((element) => element["email"] == member["email"]);
                               }
-                              _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
                             });
                           },
                         )
@@ -255,12 +273,21 @@ class _AddUserPageState extends State<AddUserPage> {
                       type: Icons.person,
                       onClick: (){
                         setState(() {
-                          if (_pickedUsers.contains(_foundUsers[index])){
+                          //check if user is already added
+                          bool isAdded = false;
+                          for (var user in data.pickedUsers) {
+                            if (user["email"] == _foundUsers[index]["email"]){
+                              isAdded = true;
+                              _foundUsers.removeWhere((element) => element["email"] == user["email"]);
+                              break;
+                            }
+                          }
+                          if (isAdded){
                             SnackBar snackBar = const SnackBar(content: Text("User already added"));
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           }else{
-                            _pickedUsers.add(_foundUsers[index]);
-                            _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
+                            data.pickedUsers.add(_foundUsers[index]);
+                            _foundUsers.removeWhere((element) => data.pickedUsers.contains(element));
                           }
                         });
                       },
@@ -271,7 +298,8 @@ class _AddUserPageState extends State<AddUserPage> {
             ]
           )
         ),
-      ),
+      );
+    })
     );
   }
 
