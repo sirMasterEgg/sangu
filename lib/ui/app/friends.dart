@@ -253,9 +253,6 @@ class _FriendsPageState extends State<FriendsPage> {
                         isGroup: true,
                         name: group['name'],
                         username: 'Created: $formattedDate',
-                        onClick: () {
-                          // todo: detaill group
-                        },
                     );
                   },
                 ),
@@ -272,9 +269,6 @@ class _FriendsPageState extends State<FriendsPage> {
                         isGroup: false,
                         name: _foundFriends[index]['display_name'],
                         username: _foundFriends[index]['username'],
-                        onClick: () {
-                          // todo: detail friend
-                        }
                     );
                   },
                 ) : const Text( 'No results found', style: TextStyle(fontSize: 18)),

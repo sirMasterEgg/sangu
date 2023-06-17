@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class AddFriendsOrGroupListTile extends StatelessWidget {
   final String name;
   final String username;
-  final Function() onClick;
   final bool isGroup;
 
   const AddFriendsOrGroupListTile({
@@ -11,7 +10,6 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
     required this.isGroup,
     required this.name,
     required this.username,
-    required this.onClick,
   }) : super(key: key);
 
   final double modalBottomSheetItemHeight = 53;
@@ -24,7 +22,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           title: const Text('Edit Group'),
           leading: Icon(Icons.edit_outlined , color: Theme.of(context).colorScheme.primary,),
           onTap: (){
-
+            // todo edit group
           },
         ),
       ),
@@ -34,7 +32,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           title: const Text('Leave Group', style: TextStyle(color: Colors.red),),
           leading: const Icon(Icons.logout_outlined , color: Colors.red,),
           onTap: () {
-
+            // todo leave group
           },
         ),
       ),
@@ -49,7 +47,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           title: const Text('Remove Friend', style: TextStyle(color: Colors.red),),
           leading: const Icon(Icons.remove_circle_outline , color: Colors.red,),
           onTap: () {
-
+            // todo delete friend
           },
         ),
       ),

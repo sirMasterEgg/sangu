@@ -26,6 +26,7 @@ class FirestoreManager {
           Map<String, dynamic> updatedUserData = change.doc.data() ?? {'email': null};
 
           _updateFriendCollection(updatedUserData);
+          _updateGroupsCollection(updatedUserData);
         }
       }
     });
@@ -33,6 +34,44 @@ class FirestoreManager {
 
   void destroyUserListener() {
     listener.cancel();
+  }
+
+  void _updateGroupsCollection(Map<String, dynamic> updatedUserData) async{
+    _db.collection('groups')
+      .get()
+      .then((QuerySnapshot snapshot) {
+        List<QueryDocumentSnapshot> matchingDocuments = snapshot.docs
+          .where((documentSnapshot) {
+              final data = documentSnapshot.data() as Map<String,dynamic>;
+              return data['members'] != null && data['members'].any((member) => member['email'] == updatedUserData['email']);
+            })
+          .toList();
+
+        for (QueryDocumentSnapshot documentSnapshot in matchingDocuments) {
+          print('Matching document ID: ${documentSnapshot.id}');
+          print('Document data: ${documentSnapshot.data()}');
+          final documentData = documentSnapshot.data() as Map<String, dynamic>;
+
+          if (documentData['owner']['email'] == updatedUserData['email']) {
+            documentData['owner']['display_name'] = updatedUserData['display_name'];
+            documentData['owner']['email'] = updatedUserData['email'];
+            documentData['owner']['username'] = updatedUserData['username'];
+            documentData['owner']['username_created_at'] = updatedUserData['username_created_at'];
+          }
+
+          documentData['members'].forEach((element) {
+            if (element['email'] == updatedUserData['email']) {
+              element['display_name'] = updatedUserData['display_name'];
+              element['email'] = updatedUserData['email'];
+              element['username'] = updatedUserData['username'];
+              element['username_created_at'] = updatedUserData['username_created_at'];
+            }
+          });
+          _db.collection('groups').doc(documentSnapshot.id).update(documentData);
+        }
+    }, onError: (error) {
+      print(error);
+    });
   }
 
   void _updateFriendCollection(Map<String, dynamic> updatedUserData) {
@@ -44,7 +83,7 @@ class FirestoreManager {
       .where('to.email', isEqualTo: updatedUserData['email'])
       .get()
       .then((QuerySnapshot snapshot) {
-        snapshot.docs.forEach((DocumentSnapshot doc) {
+        for (var doc in snapshot.docs) {
           Map<String, dynamic> friendData = doc.data() as Map<String, dynamic>;
 
           friendData['to']['email'] = updatedUserData['email'];
@@ -57,7 +96,7 @@ class FirestoreManager {
               .collection('friends')
               .doc(doc.id)
               .update(friendData);
-      });
+      }
     }, onError: (error) {
       print(error);
     });
@@ -65,7 +104,7 @@ class FirestoreManager {
       .where('from.email', isEqualTo: updatedUserData['email'])
       .get()
       .then((QuerySnapshot snapshot) {
-        snapshot.docs.forEach((DocumentSnapshot doc) {
+        for (var doc in snapshot.docs) {
           Map<String, dynamic> friendData = doc.data() as Map<String, dynamic>;
 
           friendData['from']['email'] = updatedUserData['email'];
@@ -78,7 +117,7 @@ class FirestoreManager {
               .collection('friends')
               .doc(doc.id)
               .update(friendData);
-      });
+      }
     }, onError: (error) {
       print(error);
     });
