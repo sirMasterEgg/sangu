@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:sangu/helpers/firestore_manager.dart';
 import 'package:sangu/ui/widgets/add_user_list_tile.dart';
 
 class AddUserPage extends StatefulWidget {
@@ -12,19 +14,66 @@ class AddUserPage extends StatefulWidget {
 }
 
 class _AddUserPageState extends State<AddUserPage> {
-  List<Map<String, dynamic>> _users = [
-    {"name": "victor", "email": "victor@gmail.com", "username": "victor",},
-    {"name": "jason", "email": "jason@gmail.com", "username": "jje",},
-    {"name": "daniel", "email": "daniel@gmail.com", "username": "kitsunne",},
-  ];
-  List<Map<String, dynamic>> _picked = [];
-  final _searchController = TextEditingController();
-
+  List<Map<String, dynamic>> _allUsers = [];
+  List<Map<String, dynamic>> _foundUsers = [];
+  List<Map<String, dynamic>> _pickedUsers = [];
+  List<Map<String, dynamic>> _allGroups = [];
+  final _firestoreManager = FirestoreManager();
+  final _auth = FirebaseAuth.instance;
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void initState() {
+    fetchFriend();
+    fetchGroups();
+    super.initState();
+  }
+
+  Future fetchFriend() async {
+    final toResult = await _firestoreManager.getInstance().collection('friends')
+        .where('to.email', isEqualTo: _auth.currentUser?.email)
+        .where('status', isEqualTo: 1)
+        .get();
+    final fromResult = await _firestoreManager.getInstance().collection('friends')
+        .where('from.email', isEqualTo: _auth.currentUser?.email)
+        .where('status', isEqualTo: 1)
+        .get();
+    final result = toResult.docs + fromResult.docs;
+
+    if (result.isEmpty) {
+      return;
+    }
+
+    for (var doc in result) {
+      final data = doc.data();
+      var temp = parseUserWithoutName(data, _auth.currentUser!.email!);
+      _allUsers.add(temp);
+    }
+
+    setState(() {
+      _foundUsers = _allUsers;
+    });
+  }
+
+  Future fetchGroups () async {
+    final myUser = await _firestoreManager.getInstance().collection('users').doc(_auth.currentUser?.uid).get();
+
+    final result = await _firestoreManager.getInstance().collection('groups')
+        .where('members', arrayContains: myUser.data())
+        .get();
+
+    if (result.docs.isEmpty) {
+      return;
+    }
+
+    List<Map<String, dynamic>> tempGroups = [];
+    for (var doc in result.docs) {
+      final data = parseGroup(doc.data(), _auth.currentUser!.email!);
+      tempGroups.add(data);
+    }
+
+    setState(() {
+      _allGroups = tempGroups;
+    });
   }
 
   @override
@@ -76,7 +125,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 child: LinearPercentIndicator(
                   animation: true,
                   lineHeight: 8.0,
-                  animationDuration: 400,
+                  animationDuration: 1000,
                   percent: 0.3,
                   progressColor: Theme.of(context).colorScheme.secondary,
                   barRadius: Radius.circular(10),
@@ -85,7 +134,15 @@ class _AddUserPageState extends State<AddUserPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MaterialTextField(
-                  controller: _searchController,
+                  onChanged: (value){
+                    setState(() {
+                      _foundUsers = _allUsers.where((element) => element["display_name"].toString().toLowerCase().contains(value.toLowerCase())).toList();
+                      _foundUsers += _allUsers.where((element) => element["username"].toString().toLowerCase().contains(value.toLowerCase())).toList();
+                      _foundUsers += _allUsers.where((element) => element["email"].toString().toLowerCase().contains(value.toLowerCase())).toList();
+                      _foundUsers = _foundUsers.toSet().toList();
+                      _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
+                    });
+                  },
                   keyboardType: TextInputType.emailAddress,
                   hint: 'Search',
                   labelText: 'Search',
@@ -94,32 +151,82 @@ class _AddUserPageState extends State<AddUserPage> {
                   prefixIcon: const Icon(Icons.search),
                 ),
               ),
+
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text('Picked', style: TextStyle(fontSize: 16),),
               ),
               ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _picked.length,
+                  itemCount: _pickedUsers.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index){
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: AddUserListTile(
-                        name: _picked[index]["name"],
-                        username: _picked[index]["username"],
+                        name: _pickedUsers[index]["display_name"],
+                        username: _pickedUsers[index]["username"],
                         icon: Icons.remove,
                         iconColor: Colors.red,
+                        tileColor: Theme.of(context).colorScheme.secondary,
+                        type: Icons.person,
                         onClick: (){
                           setState(() {
-                            _users.add(_picked[index]);
-                            _picked.removeAt(index);
+                            _foundUsers.add(_pickedUsers[index]);
+                            _pickedUsers.removeWhere((element) => _foundUsers.contains(element));
                           });
                         },
                       )
                     );
                   }
               ),
+
+
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(
+                  height: 1.0,
+                  thickness: 1.5,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('Group', style: TextStyle(fontSize: 16),),
+              ),
+              ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _allGroups.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index){
+                    return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: AddUserListTile(
+                          name: _allGroups[index]["name"],
+                          username: "Group",
+                          icon: Icons.add,
+                          iconColor: Colors.white,
+                          tileColor: Theme.of(context).colorScheme.onSecondary,
+                          type: Icons.group,
+                          onClick: (){
+                            setState(() {
+                              final members = _allGroups[index]["members"];
+                              for (var member in members) {
+                                //if member email is in _foundUser
+                                final temp = _allUsers.firstWhere((element) => element["email"] == member["email"]);
+                                if(temp != null){
+                                  _pickedUsers.add(temp);
+                                }
+                              }
+                              _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
+                            });
+                          },
+                        )
+                    );
+                  }
+              ),
+
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Divider(
@@ -134,20 +241,27 @@ class _AddUserPageState extends State<AddUserPage> {
               ),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _users.length,
+                itemCount: _foundUsers.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index){
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: AddUserListTile(
-                      name: _users[index]["name"],
-                      username: _users[index]["username"],
+                      name: _foundUsers[index]["display_name"],
+                      username: _foundUsers[index]["username"],
                       icon: Icons.add,
                       iconColor: Colors.white,
+                      tileColor: Theme.of(context).colorScheme.onSecondary,
+                      type: Icons.person,
                       onClick: (){
                         setState(() {
-                          _picked.add(_users[index]);
-                          _users.removeAt(index);
+                          if (_pickedUsers.contains(_foundUsers[index])){
+                            SnackBar snackBar = const SnackBar(content: Text("User already added"));
+                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          }else{
+                            _pickedUsers.add(_foundUsers[index]);
+                            _foundUsers.removeWhere((element) => _pickedUsers.contains(element));
+                          }
                         });
                       },
                     )
@@ -159,5 +273,40 @@ class _AddUserPageState extends State<AddUserPage> {
         ),
       ),
     );
+  }
+
+  Map<String, dynamic> parseUserWithoutName(Map<String, dynamic> user, String emailCurrentUser){
+    if (user['to']['email'] == emailCurrentUser){
+      return {
+        'display_name': user['from']['display_name'] ?? user['from']['username'] ?? user['from']['email'],
+        'username' : user['from']['username'],
+        'email' : user['from']['email'],
+      };
+    }
+    else {
+      return {
+        'display_name': user['to']['display_name'] ?? user['to']['username'] ?? user['to']['email'],
+        'username' : user['to']['username'],
+        'email' : user['to']['email'],
+      };
+    }
+  }
+
+  Map<String, dynamic> parseGroup(Map<String, dynamic> group, String emailCurrentUser) {
+    final members = group['members'].where((element) => element['email'] != emailCurrentUser).toList();
+    List<Map<String, dynamic>> member = [];
+
+    for (var i = 0; i < members.length; i++) {
+      member.add({
+        'display_name': members[i]['display_name'] ?? members[i]['username'] ?? members[i]['email'],
+        'username' : members[i]['username'],
+        'email' : members[i]['email'],
+      });
+    }
+
+    return {
+      'name': group['name'],
+      'members': member,
+    };
   }
 }

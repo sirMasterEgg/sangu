@@ -5,7 +5,9 @@ class AddUserListTile extends StatelessWidget {
   final String username;
   final Function() onClick;
   final Color iconColor;
+  final Color tileColor;
   final IconData icon;
+  final IconData type;
   const AddUserListTile({
     Key? key,
     required this.name,
@@ -13,19 +15,21 @@ class AddUserListTile extends StatelessWidget {
     required this.onClick,
     required this.iconColor,
     required this.icon,
+    required this.tileColor,
+    required this.type
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      tileColor: Theme.of(context).colorScheme.onSecondary,
+      tileColor: tileColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
       leading: CircleAvatar(
         radius: 20,
         backgroundColor: Colors.white,
-        child: Icon(Icons.person, color: Theme.of(context).colorScheme.primary,),
+        child: Icon(type, color: Theme.of(context).colorScheme.primary,),
       ),
       title: Text(name),
       subtitle: Text(username),

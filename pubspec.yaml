@@ -37,6 +37,7 @@ dependencies:
   custom_navigation_bar: ^0.8.2
   intl: ^0.18.1
   percent_indicator: ^4.2.3
+  floating_action_bubble: ^1.1.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

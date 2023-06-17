@@ -531,6 +531,5 @@ class _FriendsPageState extends State<FriendsPage> {
       };
     }
   }
-
 }
 
