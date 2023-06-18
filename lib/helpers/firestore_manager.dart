@@ -201,4 +201,8 @@ class FirestoreManager {
 
     await _db.collection('groups').doc(idDocument).set(temp, SetOptions(merge: true));
   }
+
+  Future<void> removeFriendFromDatabase(String idDocument)async {
+    await _db.collection('friends').doc(idDocument).delete();
+  }
 }

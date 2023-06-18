@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sangu/helpers/firestore_manager.dart';
 
-class AddFriendsOrGroupListTile extends StatelessWidget {
+class AddFriendsOrGroupListTile extends StatefulWidget {
   final String name;
   final String username;
   final bool isGroup;
@@ -12,7 +15,14 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
     required this.username,
   }) : super(key: key);
 
+  @override
+  State<AddFriendsOrGroupListTile> createState() => _AddFriendsOrGroupListTileState();
+}
+
+class _AddFriendsOrGroupListTileState extends State<AddFriendsOrGroupListTile> {
   final double modalBottomSheetItemHeight = 53;
+
+  final FirestoreManager firestore = FirestoreManager();
 
   List<Widget> generateListTileGroup ({required BuildContext context}) {
     return [
@@ -33,12 +43,13 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           leading: const Icon(Icons.logout_outlined , color: Colors.red,),
           onTap: () {
             // todo leave group
+            print('Leaving group with ID: tes');
           },
         ),
       ),
     ];
   }
-  
+
   List<Widget> generateListTilePerson ({required BuildContext context}) {
     return [
       SizedBox(
@@ -47,7 +58,8 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           title: const Text('Remove Friend', style: TextStyle(color: Colors.red),),
           leading: const Icon(Icons.remove_circle_outline , color: Colors.red,),
           onTap: () {
-            // todo delete friend
+            // todo remove friends provide idDocument
+            // firestore.removeFriendFromDatabase(idDocument)
           },
         ),
       ),
@@ -55,17 +67,17 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
   }
 
   List<Widget> generateListTile ({required BuildContext context}) {
-    return isGroup
+    return widget.isGroup
         ? generateListTileGroup(context: context)
         : generateListTilePerson(context: context);
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    int totalListTile = isGroup 
+    int totalListTile = widget.isGroup
         ? generateListTileGroup(context: context).length
         : generateListTilePerson(context: context).length;
-    
+
     double modalBottomSheetContainerHeight =
         modalBottomSheetItemHeight * totalListTile + 22.5;
 
@@ -73,7 +85,7 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      color: isGroup ? Colors.grey.shade200 : Theme.of(context).colorScheme.secondary,
+      color: widget.isGroup ? Colors.grey.shade200 : Theme.of(context).colorScheme.secondary,
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
@@ -109,13 +121,13 @@ class AddFriendsOrGroupListTile extends StatelessWidget {
           );
         },
         child: ListTile(
-          title: Text(name),
+          title: Text(widget.name),
           leading: CircleAvatar(
               radius: 20,
               backgroundColor: Theme.of(context).colorScheme.onSecondary,
-              child: Icon(isGroup ? Icons.group_outlined : Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
+              child: Icon(widget.isGroup ? Icons.group_outlined : Icons.person_outline , color: Theme.of(context).colorScheme.primary,),
           ),
-          subtitle: Text(username),
+          subtitle: Text(widget.username),
         ),
       ),
     );
