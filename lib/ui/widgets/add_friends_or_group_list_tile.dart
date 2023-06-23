@@ -43,7 +43,7 @@ class _AddFriendsOrGroupListTileState extends State<AddFriendsOrGroupListTile> {
           leading: const Icon(Icons.logout_outlined , color: Colors.red,),
           onTap: () {
             // todo leave group
-            print('Leaving group with ID: tes');
+            //firestore.leaveGroup(idGroup);
           },
         ),
       ),

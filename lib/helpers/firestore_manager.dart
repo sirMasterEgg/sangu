@@ -205,4 +205,8 @@ class FirestoreManager {
   Future<void> removeFriendFromDatabase(String idDocument)async {
     await _db.collection('friends').doc(idDocument).delete();
   }
+
+  Future<void> leaveGroup (String idGroup)async{
+    await _db.collection('groups').doc(idGroup).delete();
+  }
 }
