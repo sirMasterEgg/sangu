@@ -4,6 +4,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:sangu/helpers/currency_formatter.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
+import 'package:sangu/ui/app/create/summary.dart';
 import 'package:sangu/ui/widgets/add_user_list_tile.dart';
 
 class AddItemPage extends StatefulWidget {
@@ -70,7 +71,11 @@ class _AddItemPageState extends State<AddItemPage> {
                 }else{
                   Provider.of<PickedUserProvider>(context, listen: false).setFoodList(_pickedItem, userIndex+1);
                 }
-                Navigator.pushNamed(context, AddItemPage.routeName, arguments: userIndex+1);
+                if(Provider.of<PickedUserProvider>(context, listen: false).pickedUsers.length <= userIndex+1) {
+                  Navigator.pushNamed(context, SummaryPage.routeName);
+                }else{
+                  Navigator.pushNamed(context, AddItemPage.routeName, arguments: userIndex+1);
+                }
               }
             },
             backgroundColor: Colors.white,

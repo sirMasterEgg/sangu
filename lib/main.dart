@@ -7,6 +7,7 @@ import 'package:sangu/ui/app/app.dart';
 import 'package:sangu/ui/app/create/add_item.dart';
 import 'package:sangu/ui/app/create/add_user.dart';
 import 'package:sangu/ui/app/create/create_group.dart';
+import 'package:sangu/ui/app/create/summary.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
 import 'firebase_options.dart';
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
             AddItemPage.routeName : (context) => AddItemPage(
               userIndex: ModalRoute.of(context)?.settings.arguments as int
             ),
+            SummaryPage.routeName : (context) => const SummaryPage(),
             CreateGroupPage.routeName : (context) => const CreateGroupPage(),
           }
       ),
