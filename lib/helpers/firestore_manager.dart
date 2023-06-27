@@ -214,10 +214,6 @@ class FirestoreManager {
     await _db.collection('friends').doc(idDocument).delete();
   }
 
-  Future<void> leaveGroup (String idGroup)async{
-    await _db.collection('groups').doc(idGroup).delete();
-  }
-
   Future<void> createBill (String idDocument, {
     required List<Map<String, dynamic>> pickedUser,
     required List<List<Map<String, dynamic>>> pickedItem,
