@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class FirestoreManager {
   late FirebaseFirestore _db;
@@ -183,6 +184,7 @@ class FirestoreManager {
     List<dynamic>? members,
     dynamic owner,
     DateTime? created_at,
+    DateTime? updated_at,
   }) async {
     Map<String, dynamic> temp = {};
 
@@ -201,10 +203,14 @@ class FirestoreManager {
       temp['created_at'] = created_at;
     }
 
+    if (updated_at != null){
+      temp['updated_at'] = updated_at;
+    }
+
     await _db.collection('groups').doc(idDocument).set(temp, SetOptions(merge: true));
   }
 
-  Future<void> removeFriendFromDatabase(String idDocument)async {
+  Future<void> removeFriendFromDatabase(String idDocument) async {
     await _db.collection('friends').doc(idDocument).delete();
   }
 
@@ -242,5 +248,51 @@ class FirestoreManager {
     };
 
     await _db.collection('bills').doc(idDocument).set(temp, SetOptions(merge: true));
+  }
+
+  Future deleteGroup(String idDocument) async {
+    await _db.collection('groups').doc(idDocument).delete();
+  }
+
+  Future<String?> findGroupIdByElement(Map<String, dynamic> groupElement) async {
+    final querySnapshot = await _db.collection('groups')
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      if (doc.data().toString() == groupElement.toString()) {
+        return doc.id;
+      }
+    }
+
+    return null;
+  }
+
+  Future leaveGroup({String? idDocument, String? email}) async {
+    if (idDocument == null || email == null) {
+      return;
+    }
+
+    final querySnapshot = await _db.collection('groups')
+        .doc(idDocument)
+        .get();
+
+    if (querySnapshot.exists) {
+      final groupData = querySnapshot.data() as Map<String, dynamic>;
+
+      final members = groupData['members'] as List<dynamic>;
+      final owner = groupData['owner'] as Map<String, dynamic>;
+
+      members.removeWhere((element) => element['email'] == email);
+      if (owner['email'] == email) {
+        await _db.collection('groups').doc(idDocument).update({
+          'owner': members[0],
+          'members': members
+        });
+      } else {
+        await _db.collection('groups').doc(idDocument).update({
+          'members': members
+        });
+      }
+    }
   }
 }

@@ -3,10 +3,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:material_text_fields/theme/material_text_field_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
+import 'package:sangu/providers/selected_group_provider.dart';
 import 'package:sangu/ui/app/app.dart';
 import 'package:sangu/ui/app/create/add_item.dart';
 import 'package:sangu/ui/app/create/add_user.dart';
 import 'package:sangu/ui/app/create/create_group.dart';
+import 'package:sangu/ui/app/create/edit_group.dart';
 import 'package:sangu/ui/app/create/summary.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
@@ -29,6 +31,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => PickedUserProvider()),
+        ChangeNotifierProvider(create: (context) => SelectedGroupProvider()),
       ],
       child: MaterialApp(
           title: 'Flutter Demo',
@@ -64,6 +67,7 @@ class MyApp extends StatelessWidget {
             ),
             SummaryPage.routeName : (context) => const SummaryPage(),
             CreateGroupPage.routeName : (context) => const CreateGroupPage(),
+            EditGroup.routeName : (context) => const EditGroup(),
           }
       ),
     );

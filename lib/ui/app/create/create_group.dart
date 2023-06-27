@@ -71,7 +71,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 owner: value.data() as Map<String, dynamic>,
                 created_at: DateTime.now(),
               );
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             });
           }
         },
@@ -100,7 +100,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 spacing: 5,
                 alignment: WrapAlignment.start,
                 children: _addedFriends.map((user) {
-                  final currUserDisplayName = user['display_name'];
+                  final currUserDisplayName = user['display_name'] ?? user['username'] ?? user['email'];
                   return Chip(
                     label: Text(currUserDisplayName),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
@@ -121,10 +121,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 itemBuilder: (context, index) {
                   final allFriends = _allFriends[index];
                   return ListTile(
-                    title: Text("${allFriends['to']['email'] == _auth.currentUser!.email ? allFriends['from']['display_name'] : allFriends['to']['display_name']}"),
+                    title: Text("${allFriends['to']['email'] == _auth.currentUser!.email ? (allFriends['from']['display_name'] ?? allFriends['from']['username'] ?? allFriends['from']['email']) : (allFriends['to']['display_name'] ?? allFriends['to']['username'] ?? allFriends['to']['email'])}"),
                     onTap: () {
                       setState(() {
-                        if (_addedFriends.contains(allFriends['to']['email'] == _auth.currentUser!.email ? allFriends['from'] : allFriends['to'])) {
+                        if (_addedFriends.any((friend) => friend['email'] == (allFriends['to']['email'] == _auth.currentUser!.email ? allFriends['from']['email'] : allFriends['to']['email']))) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Contact already added'),
