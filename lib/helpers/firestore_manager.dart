@@ -229,6 +229,7 @@ class FirestoreManager {
       temp2.add(
         {
           "email" : pickedUser[i]['email'],
+          "status": "pending",
           "items" : pickedItem[i+1],
         }
       );
@@ -236,7 +237,7 @@ class FirestoreManager {
 
     temp = {
       "owner" : _auth.currentUser!.email,
-      "items" : temp2,
+      "detail" : temp2,
       "created_at" : DateTime.now(),
     };
 
