@@ -232,8 +232,11 @@ class _FriendsPageState extends State<FriendsPage> {
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 10),
               child: InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, CreateGroupPage.routeName);
+                onTap: () async {
+                  final addStatus = await Navigator.pushNamed(context, CreateGroupPage.routeName);
+                  if (addStatus == true) {
+                    await fetchGroups();
+                  }
                 },
                 child: ListTile(
                   title: const Text('Create a group'),
@@ -253,6 +256,15 @@ class _FriendsPageState extends State<FriendsPage> {
                         isGroup: true,
                         name: group['name'],
                         username: 'Created: $formattedDate',
+                        friendObject: group,
+                        callbackRefresh: () {
+                          setState(() {
+                            _groups.removeAt(index);
+                          });
+                        },
+                        callbackRefreshGroup: () async {
+                          await fetchGroups();
+                        },
                     );
                   },
                 ),
@@ -269,6 +281,12 @@ class _FriendsPageState extends State<FriendsPage> {
                         isGroup: false,
                         name: _foundFriends[index]['display_name'],
                         username: _foundFriends[index]['username'],
+                        friendObject: _foundFriends[index],
+                        callbackRefresh: () {
+                          setState(() {
+                            _foundFriends.removeAt(index);
+                          });
+                        },
                     );
                   },
                 ) : const Text( 'No results found', style: TextStyle(fontSize: 18)),
