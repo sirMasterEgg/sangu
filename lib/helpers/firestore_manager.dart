@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class FirestoreManager {
   late FirebaseFirestore _db;
+  final _auth = FirebaseAuth.instance;
 
   FirestoreManager() {
     _db = FirebaseFirestore.instance;
@@ -210,6 +212,42 @@ class FirestoreManager {
 
   Future<void> removeFriendFromDatabase(String idDocument) async {
     await _db.collection('friends').doc(idDocument).delete();
+  }
+
+  Future<void> leaveGroup (String idGroup)async{
+    await _db.collection('groups').doc(idGroup).delete();
+  }
+
+  Future<void> createBill (String idDocument, {
+    required List<Map<String, dynamic>> pickedUser,
+    required List<List<Map<String, dynamic>>> pickedItem,
+  }) async{
+    Map<String, dynamic> temp;
+    List<Map<String, dynamic>> temp2 = [];
+    temp2.add(
+      {
+        "email" : _auth.currentUser!.email,
+        "items" : pickedItem[0],
+      }
+    );
+
+    for(int i = 0; i < pickedUser.length; i++){
+      temp2.add(
+        {
+          "email" : pickedUser[i]['email'],
+          "status": "pending",
+          "items" : pickedItem[i+1],
+        }
+      );
+    }
+
+    temp = {
+      "owner" : _auth.currentUser!.email,
+      "detail" : temp2,
+      "created_at" : DateTime.now(),
+    };
+
+    await _db.collection('bills').doc(idDocument).set(temp, SetOptions(merge: true));
   }
 
   Future deleteGroup(String idDocument) async {

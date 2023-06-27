@@ -5,6 +5,7 @@ import 'package:material_text_fields/material_text_fields.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:sangu/helpers/firestore_manager.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
+import 'package:sangu/ui/app/create/add_item.dart';
 import 'package:sangu/ui/widgets/add_user_list_tile.dart';
 import 'package:provider/provider.dart';
 
@@ -28,6 +29,7 @@ class _AddUserPageState extends State<AddUserPage> {
   void initState() {
     fetchFriend();
     fetchGroups();
+    Provider.of<PickedUserProvider>(context, listen: false).refreshAll();
     super.initState();
   }
 
@@ -98,7 +100,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 Navigator.pop(context);
               },
               backgroundColor: Colors.red,
-              child: Icon(
+              child: const Icon(
                 Icons.navigate_before,
                 color: Colors.white,
               ),
@@ -107,7 +109,16 @@ class _AddUserPageState extends State<AddUserPage> {
           FloatingActionButton(
             heroTag: "next",
             onPressed: (){
-
+              if(Provider.of<PickedUserProvider>(context, listen: false).pickedUsers.isEmpty){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Please pick at least one user"),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }else{
+                Navigator.pushNamed(context, AddItemPage.routeName, arguments: -1);
+              }
             },
             backgroundColor: Colors.white,
             child: Icon(
@@ -146,7 +157,7 @@ class _AddUserPageState extends State<AddUserPage> {
                   animation: true,
                   lineHeight: 8.0,
                   animationDuration: 1000,
-                  percent: 0.3,
+                  percent: 0.2,
                   progressColor: Theme.of(context).colorScheme.secondary,
                   barRadius: Radius.circular(10),
                 ),
@@ -192,7 +203,16 @@ class _AddUserPageState extends State<AddUserPage> {
                         type: Icons.person,
                         onClick: (){
                           setState(() {
-                            _foundUsers.add(data.pickedUsers[index]);
+                            bool found = false;
+                            for (var user in _foundUsers) {
+                              if(user["email"] == data.pickedUsers[index]["email"]){
+                                found = true;
+                                break;
+                              }
+                            }
+                            if(!found){
+                              _foundUsers.add(data.pickedUsers[index]);
+                            }
                             data.pickedUsers.removeWhere((element) => element["email"] == data.pickedUsers[index]["email"]);
                           });
                         },

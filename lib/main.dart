@@ -5,9 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
 import 'package:sangu/providers/selected_group_provider.dart';
 import 'package:sangu/ui/app/app.dart';
+import 'package:sangu/ui/app/create/add_item.dart';
 import 'package:sangu/ui/app/create/add_user.dart';
 import 'package:sangu/ui/app/create/create_group.dart';
 import 'package:sangu/ui/app/create/edit_group.dart';
+import 'package:sangu/ui/app/create/summary.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
 import 'firebase_options.dart';
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
           title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSwatch().copyWith(
               primary: const Color(0xFF1F2128),
@@ -59,6 +62,10 @@ class MyApp extends StatelessWidget {
             RegisterPage.routeName : (context) => const RegisterPage(),
             AppPage.routeName : (context) => const AppPage(),
             AddUserPage.routeName : (context) => const AddUserPage(),
+            AddItemPage.routeName : (context) => AddItemPage(
+              userIndex: ModalRoute.of(context)?.settings.arguments as int
+            ),
+            SummaryPage.routeName : (context) => const SummaryPage(),
             CreateGroupPage.routeName : (context) => const CreateGroupPage(),
             EditGroup.routeName : (context) => const EditGroup(),
           }
