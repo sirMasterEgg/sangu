@@ -46,6 +46,7 @@ dependencies:
   cloud_firestore: ^4.8.0
   uuid: ^3.0.7
   email_validator: ^2.1.17
+  sqflite: ^2.2.8+4
 
 
 dev_dependencies:
