@@ -1,16 +1,14 @@
-# sangu
+# Sangu
 
-Project Multiplatform Mobile Programming
+Project Multiplatform Mobile Programming 
 
-## Getting Started
+## Description
+Sangu is a user-friendly app that makes splitting bills with friends easy. It has a special feature for dividing expenses, so you don't have to worry about the math. You can also connect with friends and create groups in the app, which helps manage shared expenses. Whether you're planning a trip or sharing costs at home, Sangu makes sure everyone pays their fair share. No more complicated calculations or confusion. Just focus on enjoying your time together while Sangu takes care of splitting the bills accurately. Try Sangu today and discover a simple and hassle-free way to divide expenses, whether it's in a group or individually.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## App Preview
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/038ff920-8093-48a1-bdf9-d25af153daef">
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/cadd1a67-4c38-4866-8222-5c45136fa90b">
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/7af01dfa-d3b0-42ee-9864-ed1fd6ae9998">
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/faf0e742-29bf-44d7-89d8-781abf2be6d7">
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/902ee7e4-94b9-4734-a128-83147bd5c511">
+<img height="840" src="https://github.com/sirMasterEgg/sangu/assets/82816338/728b7fa3-7fe5-4f0e-b79c-80dca82f91a8">
