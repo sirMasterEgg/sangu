@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:sangu/helpers/firestore_manager.dart';
+import 'package:sangu/helpers/sqlite_config.dart';
 import 'package:sangu/providers/selected_group_provider.dart';
 
 class EditGroup extends StatefulWidget {
@@ -20,6 +21,7 @@ class _EditGroupState extends State<EditGroup> {
   List<Map<String, dynamic>> _allFriends = [];
   final FirestoreManager _firestoreManager = FirestoreManager();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String suggestedGroupName = '';
 
   @override
   void initState() {
@@ -28,6 +30,13 @@ class _EditGroupState extends State<EditGroup> {
       fetchFriends();
       fetchGroupData();
     }
+    SqliteConfig().getSangu().then((value) {
+      if (mounted){
+        setState(() {
+          suggestedGroupName = value.suggestName;
+        });
+      }
+    });
   }
 
   Future fetchGroupData() async {
@@ -137,6 +146,21 @@ class _EditGroupState extends State<EditGroup> {
                     labelText: 'Group Name',
                     textInputAction: TextInputAction.next,
                     prefixIcon: const Icon(Icons.groups_outlined),
+                  ),
+                  Row(
+                    children: [
+                      const Text('Suggested Group Name: '),
+                      ActionChip(
+                        label: Text(suggestedGroupName),
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        elevation: 5,
+                        onPressed: () {
+                          setState(() {
+                            _groupNameController.text = suggestedGroupName;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10.0),
                   SingleChildScrollView(

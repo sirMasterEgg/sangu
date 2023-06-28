@@ -58,9 +58,11 @@ class _FriendsPageState extends State<FriendsPage> {
       _allFriends.add(temp);
     }
 
-    setState(() {
-      _foundFriends = _allFriends;
-    });
+    if (mounted) {
+      setState(() {
+        _foundFriends = _allFriends;
+      });
+    }
   }
 
   Future fetchGroups () async {
@@ -80,9 +82,11 @@ class _FriendsPageState extends State<FriendsPage> {
       tempGroups.add(data);
     }
 
-    setState(() {
-      _groups = tempGroups;
-    });
+    if (mounted){
+      setState(() {
+        _groups = tempGroups;
+      });
+    }
   }
 
   Future getUserDetail() async {
@@ -97,9 +101,12 @@ class _FriendsPageState extends State<FriendsPage> {
 
     final doc = results.docs.first;
     final data = doc.data();
-    setState(() {
-      _user = data;
-    });
+
+    if (mounted){
+      setState(() {
+        _user = data;
+      });
+    }
   }
 
   // This function is called whenever the text field changes

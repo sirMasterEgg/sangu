@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_text_fields/material_text_fields.dart';
 import 'package:sangu/helpers/firestore_manager.dart';
+import 'package:sangu/helpers/sqlite_config.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateGroupPage extends StatefulWidget {
@@ -20,13 +21,20 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final FirestoreManager _firestoreManager = FirestoreManager();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Uuid uuid = Uuid();
-
+  String suggestedGroupName = '';
   @override
   void initState() {
     super.initState();
     if (_auth.currentUser != null){
       fetchFriends();
     }
+    SqliteConfig().getSangu().then((value) {
+      if (mounted){
+        setState(() {
+          suggestedGroupName = value.suggestName;
+        });
+      }
+    });
   }
 
   Future fetchFriends() async {
@@ -92,6 +100,21 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               labelText: 'Group Name',
               textInputAction: TextInputAction.next,
               prefixIcon: const Icon(Icons.groups_outlined),
+            ),
+            Row(
+              children: [
+                const Text('Suggested Group Name: '),
+                ActionChip(
+                  label: Text(suggestedGroupName),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  elevation: 5,
+                  onPressed: () {
+                    setState(() {
+                      _groupNameController.text = suggestedGroupName;
+                    });
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 10.0),
             SingleChildScrollView(

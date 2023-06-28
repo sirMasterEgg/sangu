@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:material_text_fields/theme/material_text_field_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sangu/helpers/sqlite_config.dart';
+import 'package:sangu/models/sangu_model.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
 import 'package:sangu/providers/selected_group_provider.dart';
 import 'package:sangu/ui/app/app.dart';
@@ -13,12 +16,38 @@ import 'package:sangu/ui/app/create/edit_group.dart';
 import 'package:sangu/ui/app/create/summary.dart';
 import 'package:sangu/ui/auth/login.dart';
 import 'package:sangu/ui/auth/register.dart';
+import 'package:uuid/uuid.dart';
 import 'firebase_options.dart';
+import 'package:http/http.dart' as http;
+
+Future useApiAndSqlite() async{
+  final sqlite = SqliteConfig();
+  sqlite.initDB();
+
+  final randomName = await http.get(Uri.parse('https://names.drycodes.com/10?nameOptions=funnyWords&separator=space'));
+
+  const uuid = Uuid();
+
+  final listRandomName = jsonDecode(randomName.body);
+  List<SanguModel> tempName = [];
+  for (var i = 0; i < listRandomName.length; i++) {
+    tempName.add(SanguModel(id: uuid.v4(), suggestName: listRandomName[i]));
+  }
+  final size = await sqlite.countSangu();
+  if (size >= 100) {
+    await sqlite.deleteSanguData();
+    sqlite.insertManySangu(tempName);
+  }
+  else {
+    sqlite.insertManySangu(tempName);
+  }
+
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SqliteConfig().initDB();
+  await useApiAndSqlite();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

@@ -1,21 +1,21 @@
 class SanguModel {
-  late int id;
-  late String image;
+  late String id;
+  late String suggestName;
 
   SanguModel({
     required this.id,
-    required this.image,
+    required this.suggestName,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'image': image,
+      'name_suggest': suggestName,
     };
   }
 
   SanguModel.fromMap(Map<String, dynamic> map) {
     id = map['id'];
-    image = map['image'];
+    suggestName = map['name_suggest'];
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:sangu/models/sangu_model.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -19,7 +21,7 @@ class SqliteConfig {
       "$path/sangu.db",
       onCreate: (Database db, int version) async {
         await db.execute(
-            'CREATE TABLE $_tableSangu (id INTEGER PRIMARY KEY, image TEXT)'
+            'CREATE TABLE $_tableSangu (id TEXT PRIMARY KEY, name_suggest TEXT)'
         );
         print('DB Created');
       },
@@ -42,10 +44,39 @@ class SqliteConfig {
     }
   }
 
-  Future<List<SanguModel>> getSangus() async {
+  Future insertManySangu(List<SanguModel> models) async {
     final Database db = await database;
-    List<Map<String, dynamic>> results = await db.query(_tableSangu);
-    return results.map((res) => SanguModel.fromMap(res)).toList();
+    if (db != null) {
+      try {
+        Batch batch = db.batch();
+        for (var model in models) {
+          batch.insert(_tableSangu, model.toMap());
+        }
+        await batch.commit();
+        print('Data inserted');
+      } catch (_) {
+        print('Error inserting data');
+      }
+    } else {
+      print('Error: Database is not initialized');
+    }
+  }
+
+  Future<SanguModel> getSangu() async {
+    final Database db = await database;
+    List<Map<String, dynamic>> results = await db.query(_tableSangu, limit: 1, orderBy: 'RANDOM()');
+    return SanguModel.fromMap(results[0]);
+  }
+
+  Future<int> countSangu () async {
+    final Database db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery('SELECT COUNT(*) FROM $_tableSangu');
+    return results[0]['COUNT(*)'];
+  }
+
+  Future<void> deleteSanguData() async {
+    final Database db = await database;
+    await db.delete(_tableSangu);
   }
 
   /*
