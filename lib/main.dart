@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:material_text_fields/theme/material_text_field_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:sangu/helpers/notification_service.dart';
 import 'package:sangu/helpers/sqlite_config.dart';
 import 'package:sangu/models/sangu_model.dart';
 import 'package:sangu/providers/picked_user_provider.dart';
@@ -48,6 +49,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await useApiAndSqlite();
+  final notif = NotificationService();
+  await notif.init();
+  await notif.showNotifications(
+      notificationTitle: 'Welcome to Sangu',
+      notificationBody: 'Sangu is a simple app to manage your group expenses.',
+  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
