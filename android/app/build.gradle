@@ -21,6 +21,26 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def propKeyAlias = localProperties.getProperty('release.keyAlias')
+if (propKeyAlias == null) {
+    propKeyAlias = 'key'
+}
+
+def propKeyPassword = localProperties.getProperty('release.keyPassword')
+if (propKeyPassword == null) {
+    propKeyPassword = 'password'
+}
+
+def propStorePassword = localProperties.getProperty('release.storePassword')
+if (propStorePassword == null) {
+    propStorePassword = 'password'
+}
+
+def propStoreFile = localProperties.getProperty('release.storeFile')
+if (propStoreFile == null) {
+    propStoreFile = 'D:\\Kuliah\\sem6\\MultiplatformMDP\\sangu\\android\\app\\my-release-key.keystore'
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
@@ -54,11 +74,20 @@ android {
         versionName flutterVersionName
     }
 
+    signingConfigs {
+        release {
+            keyAlias propKeyAlias
+            keyPassword propKeyPassword
+            storeFile file(propStoreFile)
+            storePassword propStorePassword
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
