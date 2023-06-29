@@ -180,7 +180,7 @@ class _SummaryPageState extends State<SummaryPage> {
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Padding(padding: const EdgeInsets.only(bottom: 4.0), child: Text(data.pickedUsers[index]["display_name"], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),)),
+                                        Padding(padding: const EdgeInsets.only(bottom: 4.0), child: Text(data.pickedUsers[index]["display_name"]??data.pickedUsers[index]["email"], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),)),
                                         for(var item in data.foodList[index+1])
                                           Padding(
                                             padding: const EdgeInsets.symmetric(vertical: 4.0),

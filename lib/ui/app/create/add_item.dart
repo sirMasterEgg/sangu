@@ -94,7 +94,7 @@ class _AddItemPageState extends State<AddItemPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text("What did ${userIndex==-1?"you":data.pickedUsers[userIndex]["display_name"]} buy ?", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                Text("What did ${userIndex==-1?"you":data.pickedUsers[userIndex]["display_name"]??data.pickedUsers[userIndex]["email"]} buy ?", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: LinearPercentIndicator(

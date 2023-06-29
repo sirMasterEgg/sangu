@@ -195,8 +195,8 @@ class _AddUserPageState extends State<AddUserPage> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: AddUserListTile(
-                        name: data.pickedUsers[index]["display_name"],
-                        username: data.pickedUsers[index]["username"],
+                        name: data.pickedUsers[index]["display_name"]??data.pickedUsers[index]["email"],
+                        username: data.pickedUsers[index]["username"]??"",
                         icon: Icons.remove,
                         iconColor: Colors.red,
                         tileColor: Theme.of(context).colorScheme.secondary,
@@ -285,8 +285,8 @@ class _AddUserPageState extends State<AddUserPage> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: AddUserListTile(
-                      name: _foundUsers[index]["display_name"],
-                      username: _foundUsers[index]["username"],
+                      name: _foundUsers[index]["display_name"]??data.pickedUsers[index]["email"],
+                      username: _foundUsers[index]["username"]??"",
                       icon: Icons.add,
                       iconColor: Colors.white,
                       tileColor: Theme.of(context).colorScheme.onSecondary,
