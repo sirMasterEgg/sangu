@@ -43,8 +43,6 @@ class NotificationService {
     playSound: true,
     priority: Priority.high,
     importance: Importance.high,
-    ongoing: true,
-
   );
 
   Future<void> showNotifications({

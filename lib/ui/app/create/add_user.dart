@@ -27,10 +27,15 @@ class _AddUserPageState extends State<AddUserPage> {
 
   @override
   void initState() {
-    fetchFriend();
-    fetchGroups();
-    Provider.of<PickedUserProvider>(context, listen: false).refreshAll();
     super.initState();
+    wrapper();
+  }
+
+  Future wrapper () async {
+    final provider = Provider.of<PickedUserProvider>(context, listen: false);
+    await fetchFriend();
+    await fetchGroups();
+    provider.refreshAll();
   }
 
   Future fetchFriend() async {
@@ -67,6 +72,9 @@ class _AddUserPageState extends State<AddUserPage> {
         .get();
 
     if (result.docs.isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -129,21 +137,24 @@ class _AddUserPageState extends State<AddUserPage> {
         ],
       ),
       body: Consumer<PickedUserProvider>(
-        builder: (context, PickedUserProvider data, widget){return _isLoading ? Center(child: SpinKitCircle(
-          size: 125,
-          duration: const Duration(seconds: 2),
-          itemBuilder: (BuildContext context, int index){
-            final colors = [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.onSecondary];
-            final color = colors[index % colors.length];
+        builder: (context, PickedUserProvider data, widget){
+          return _isLoading ? Center(
+            child: SpinKitCircle(
+            size: 125,
+            duration: const Duration(seconds: 2),
+            itemBuilder: (BuildContext context, int index){
+              final colors = [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary, Theme.of(context).colorScheme.onSecondary];
+              final color = colors[index % colors.length];
 
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-            );
-          },
-        ),) :
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              );
+            },
+          ),
+        ) :
         SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
